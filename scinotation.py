@@ -45,12 +45,6 @@ class ScientificNotation:
             return 1
     
 
-number = ScientificNotation('2.33x10^23')
-print(number.integral, number.decimal, number.exponent, number.sig_digits())
 
-try:
-    number = ScientificNotation('233x10^23')
-    print(number.integral, number.decimal, number.exponent, number.sig_digits())
-except Exception as exception:
-    print(f'Something went wrong: {exception}')    
+
 
