@@ -5,6 +5,7 @@ Created on Sun Apr 12 14:06:21 2020
 @author: John Hallat
 """
 from re import match, search
+from decimal import Decimal
 
 class ScientificNotation:
  
@@ -18,7 +19,6 @@ class ScientificNotation:
         if not result:
             raise Exception('Invalid format for scientific notation')
 
-        integral = ''
         decimal = ''
         exponent = ''
         integral_match = search('-{0,1}[0-9]{1,}', value)
@@ -44,6 +44,21 @@ class ScientificNotation:
         else:
             return 1
     
+    def __mul__(self, other):
+        exponent_product = int(self.exponent) + int(other.exponent)
+        multiplicand = f'{self.integral}.{self.decimal}' if self.decimal else self.integral
+        multiplier = f'{other.integral}.{other.decimal}' if other.decimal else other.integral
+        product = Decimal(multiplicand) * Decimal(multiplier)
+        multiplicand_sd = self.sig_digits()
+        multiplier_sd = other.sig_digits()
+        current_sd = multiplicand_sd if multiplicand_sd < multiplier_sd else multiplier_sd
+        if product > 10:
+            while product > 10:
+                product /= 10
+        if product < 1:
+            while product < 1:
+                product *= 10
+        return ScientificNotation(f'{round(product, current_sd -1)}x10^{exponent_product}')
 
 
 
