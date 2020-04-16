@@ -17,5 +17,15 @@ class ScientificNotationTest(unittest.TestCase):
         self.assertEqual('6', product.decimal)
         self.assertEqual('3', product.exponent)
 
+    def test_equals(self):
+        number_one = ScientificNotation('1.54x10^2')
+        number_two = ScientificNotation('1.54x10^2')
+        self.assertTrue(number_one == number_two)
+
+    def test_not_equals(self):
+        number_one = ScientificNotation('1.54x10^2')
+        number_two = ScientificNotation('1.53x10^2')
+        self.assertFalse(number_one == number_two)
+
 if __name__ == '__main__':
     unittest.main()

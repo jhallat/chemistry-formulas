@@ -60,6 +60,8 @@ class ScientificNotation:
                 product *= 10
         return ScientificNotation(f'{round(product, current_sd -1)}x10^{exponent_product}')
 
+    def __eq__(self, other):
+        return self.integral == other.integral and self.decimal == other.decimal and self.exponent == other.exponent
 
 
 
