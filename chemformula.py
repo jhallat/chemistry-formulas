@@ -58,7 +58,7 @@ def sig_digits(value):
 
 def round_to_sig_digits(value, digits):
     svalue = str(value)
-    adigits = digits
+    adigits = digits + 1
     before_decimal = True
     leading_zeros = True
     nvalue = ''
@@ -82,7 +82,31 @@ def round_to_sig_digits(value, digits):
             before_decimal = False
             nvalue += '.'
     # TODO need to properly round
-    return Decimal(nvalue)
+    return Decimal(round_last(nvalue))
+
+def round_last(value):
+    str_value = str(value)
+    decimal = '.' in str_value
+    last = str_value[len(str_value) - 1]
+    str_value = str_value[:-1]
+
+    trail = ''
+
+    if int(last) >= 5:
+        if str_value[-1] == '9':
+            while (str_value[-1] == '9' or str_value[-1] == '.') and len(str_value) > 1:
+                if str_value[-1] == '.':
+                    trail = '.' + trail
+                    str_value = str_value[:-1]
+                    continue
+                trail = '0' + trail
+                str_value = str_value[:-1]
+        next_last = int(str_value[-1]) + 1
+        str_value = str_value[:-1] + str(next_last) + trail
+    if not decimal:
+        str_value = str_value + '0'
+
+    return Decimal(str_value)
 
 def molar_mass(formula):
     table = PeriodicTable()
@@ -96,12 +120,14 @@ def molar_mass(formula):
 def moles_from_grams(grams, formula):
     mmass = molar_mass(formula)[0]
     digits = min(sig_digits(grams), sig_digits(mmass))
-    return round_to_sig_digits(Decimal(str(grams)) / molar_mass(formula)[0], digits)
+    value = round_to_sig_digits(Decimal(str(grams)) / molar_mass(formula)[0], digits)
+    return (value, 'mol')
 
+# TODO add a measurement class instead of using tuples !!!
 
 if __name__ == '__main__':
     print(f"molar mass of 'K2CrO4' = {molar_mass('K2CrO4')}")
     print(f"molar mass of 'C12H22O11' = {molar_mass('C12H22O11')}")
 
-    print(f"{moles_from_grams(212, 'K2CrO4')} moles in 212g of K2Cr04")
-    print(f"{moles_from_grams(212, 'C12H22O11')} moles in 212g of C12H22O11")
+    print(f"{moles_from_grams(212, 'K2CrO4')[0]} moles in 212g of K2Cr04")
+    print(f"{moles_from_grams(212, 'C12H22O11')[0]} moles in 212g of C12H22O11")
