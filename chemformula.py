@@ -1,6 +1,30 @@
 from periodictable import PeriodicTable
 from decimal import Decimal, getcontext
 
+class InvalidUnitError(Exception):
+    pass
+
+# TODO Convenience methods for measurements
+class Measurement:
+
+    def __init__(self, value, unit):
+        self.value = value
+        self.unit = unit
+
+    def __str__(self):
+        return str(self.value) + ' ' + self.unit
+
+    def __eq__(self, other):
+        if not isinstance(other, Measurement):
+            return False
+        return self.value == other.value and self.unit == other.unit
+
+    def __truediv__(self, other):
+        div_value = self.value / other.value
+        div_unit = self.unit + '/' + other.unit
+        return Measurement(div_value, div_unit)
+
+
 def composition(value):
     tokens = []
     current_token = ''
@@ -44,7 +68,10 @@ def composition(value):
     return composition
 
 def sig_digits(value):
-    svalue = str(value)
+    if isinstance(value, Measurement):
+        svalue = str(value.value)
+    else:
+        svalue = str(value)
     digits = 0
     if '.' in svalue:
         digits = len(svalue) - 1
@@ -57,13 +84,16 @@ def sig_digits(value):
     return digits
 
 def round_to_sig_digits(value, digits):
-    svalue = str(value)
+    if isinstance(value, Measurement):
+        svalue = str(value.value)
+    else:
+        svalue = str(value)
     adigits = digits + 1
     before_decimal = True
     leading_zeros = True
     nvalue = ''
     for char in svalue:
-        if leading_zeros:
+        if leading_zeros and not char == '.':
             if not char == '0':
                 leading_zeros = False
             else:
@@ -80,11 +110,21 @@ def round_to_sig_digits(value, digits):
             adigits -= 1
         else:
             before_decimal = False
-            nvalue += '.'
+            if adigits > 0:
+                nvalue += '.'
+            else:
+                break
+    if adigits > 0 and not before_decimal:
+        nvalue = nvalue + ('0' * adigits)
     # TODO need to properly round
-    return Decimal(round_last(nvalue))
+    rounded_value = Decimal(round_last(nvalue))
+    if isinstance(value, Measurement):
+        return Measurement(rounded_value, value.unit)
+    else:
+        return Decimal(Decimal(round_last(nvalue)))
 
 def round_last(value):
+
     str_value = str(value)
     decimal = '.' in str_value
     last = str_value[len(str_value) - 1]
@@ -102,9 +142,17 @@ def round_last(value):
                 trail = '0' + trail
                 str_value = str_value[:-1]
         next_last = int(str_value[-1]) + 1
+        last = str_value[-1]
         str_value = str_value[:-1] + str(next_last) + trail
     if not decimal:
-        str_value = str_value + '0'
+        trail = ''
+        if last == '0':
+            while last == '0':
+                trail += '0';
+                last = str_value[-1]
+                str_value = str_value[:-1]
+
+        str_value = str_value + '0' + trail
 
     return Decimal(str_value)
 
@@ -112,22 +160,25 @@ def molar_mass(formula):
     table = PeriodicTable()
     atoms = composition(formula)
     total_mass = 0
+    digits = 0
     for count, symbol in atoms:
         mass = table.search(symbol).atomic_mass
+        digits = sig_digits(mass) if digits == 0 else min(digits, sig_digits(mass))
         total_mass = total_mass + (Decimal(mass) * Decimal(count))
-    return (total_mass, 'g/mol')
+        total_mass = round_to_sig_digits(total_mass, digits)
+    return Measurement(total_mass, 'g/mol')
 
 def moles_from_grams(grams, formula):
-    mmass = molar_mass(formula)[0]
+    mmass = molar_mass(formula).value
     digits = min(sig_digits(grams), sig_digits(mmass))
-    value = round_to_sig_digits(Decimal(str(grams)) / molar_mass(formula)[0], digits)
-    return (value, 'mol')
+    value = round_to_sig_digits(Decimal(str(grams)) / mmass, digits)
+    return Measurement(value, 'mol')
 
-# TODO add a measurement class instead of using tuples !!!
+def molarity(moles, liters):
+    msmt_moles = moles if isinstance(moles, Measurement) else Measurement(moles, "mol")
+    msmt_liters = liters if isinstance(liters, Measurement) else Measurement(liters, "L")
 
-if __name__ == '__main__':
-    print(f"molar mass of 'K2CrO4' = {molar_mass('K2CrO4')}")
-    print(f"molar mass of 'C12H22O11' = {molar_mass('C12H22O11')}")
+    digits = min(sig_digits(moles), sig_digits(liters))
+    molarity = round_to_sig_digits(msmt_moles/msmt_liters, digits)
+    return molarity
 
-    print(f"{moles_from_grams(212, 'K2CrO4')[0]} moles in 212g of K2Cr04")
-    print(f"{moles_from_grams(212, 'C12H22O11')[0]} moles in 212g of C12H22O11")

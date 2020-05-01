@@ -1,3 +1,5 @@
+import os
+
 class Element:
 
     def __init__(self, atomic_number, symbol, name, atomic_mass):
@@ -14,7 +16,7 @@ class PeriodicTable:
     def __init__(self):
         self.table_symbol = {}
         self.table_number = {}
-        data_file = open("periodic-table.dat", "r")
+        data_file = open(os.path.join(os.path.dirname(__file__), "periodic-table.dat"), "r")
         data = data_file.read()
         lines = data.split("\n")
         for line in lines:
@@ -23,6 +25,7 @@ class PeriodicTable:
             element = Element(atomic_number, symbol, name, atomic_mass)
             self.table_symbol[symbol] = element
             self.table_number[atomic_number] = element
+        data_file.close()
 
     def search(self, value):
         if value.isdigit():

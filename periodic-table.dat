@@ -1,4 +1,4 @@
-1,H,Hydrogen,1.008
+1,H,Hydrogen,1.0079
 2,He,Helium,4.0026
 3,Li,Lithium,6.941
 4,Be,Beryllium,9.012
@@ -22,3 +22,8 @@
 22,Ti,Titanium,47.867
 23,V,Vanadium,50.942
 24,Cr,Chromium,51.996
+25,Mn,Manganese,54.938
+26,Fe,Iron,55.845
+27,Co,Cobalt,58.933
+28,Ni,Nickel,58.693
+29,Cu,Copper,63.546
