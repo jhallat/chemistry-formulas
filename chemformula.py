@@ -1,28 +1,6 @@
+from measurement import Measurement, GRAMS, MOLES, validate_measurement, LITERS
 from periodictable import PeriodicTable
-from decimal import Decimal, getcontext
-
-class InvalidUnitError(Exception):
-    pass
-
-# TODO Convenience methods for measurements
-class Measurement:
-
-    def __init__(self, value, unit):
-        self.value = value
-        self.unit = unit
-
-    def __str__(self):
-        return str(self.value) + ' ' + self.unit
-
-    def __eq__(self, other):
-        if not isinstance(other, Measurement):
-            return False
-        return self.value == other.value and self.unit == other.unit
-
-    def __truediv__(self, other):
-        div_value = self.value / other.value
-        div_unit = self.unit + '/' + other.unit
-        return Measurement(div_value, div_unit)
+from decimal import Decimal
 
 
 def composition(value):
@@ -64,7 +42,7 @@ def composition(value):
                 composition += [(count if count else '1', element)]
                 element = token
                 count=''
-    composition += [(count, element)]
+    composition += [(count if count else '1', element)]
     return composition
 
 def sig_digits(value):
@@ -156,29 +134,5 @@ def round_last(value):
 
     return Decimal(str_value)
 
-def molar_mass(formula):
-    table = PeriodicTable()
-    atoms = composition(formula)
-    total_mass = 0
-    digits = 0
-    for count, symbol in atoms:
-        mass = table.search(symbol).atomic_mass
-        digits = sig_digits(mass) if digits == 0 else min(digits, sig_digits(mass))
-        total_mass = total_mass + (Decimal(mass) * Decimal(count))
-        total_mass = round_to_sig_digits(total_mass, digits)
-    return Measurement(total_mass, 'g/mol')
 
-def moles_from_grams(grams, formula):
-    mmass = molar_mass(formula).value
-    digits = min(sig_digits(grams), sig_digits(mmass))
-    value = round_to_sig_digits(Decimal(str(grams)) / mmass, digits)
-    return Measurement(value, 'mol')
-
-def molarity(moles, liters):
-    msmt_moles = moles if isinstance(moles, Measurement) else Measurement(moles, "mol")
-    msmt_liters = liters if isinstance(liters, Measurement) else Measurement(liters, "L")
-
-    digits = min(sig_digits(moles), sig_digits(liters))
-    molarity = round_to_sig_digits(msmt_moles/msmt_liters, digits)
-    return molarity
 

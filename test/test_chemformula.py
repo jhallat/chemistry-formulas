@@ -1,7 +1,9 @@
 import unittest
 from chemformula import *
+from measurement import moles, liters, InvalidUnitError, grams, milli
 
-class MyTestCase(unittest.TestCase):
+
+class ChemicalFormulaTestCase(unittest.TestCase):
 
     def test_round_to_sig_digits(self):
         actual = round_to_sig_digits(1.1119, 4)
@@ -43,31 +45,10 @@ class MyTestCase(unittest.TestCase):
         actual = round_last(2220)
         self.assertEqual(Decimal('2200'), actual)
 
-    def test_molar_mass_K2CrO4(self):
-        actual = molar_mass('K2CrO4')
-        self.assertEqual(Measurement(Decimal('194.19'),'g/mol'), actual)
-
-    def test_molar_mass_C12H12O11(self):
-        actual = molar_mass('C12H22O11')
-        self.assertEqual(Measurement(Decimal('342.29'), 'g/mol'), actual)
-
-    def test_moles_from_grams_K2CrO4(self):
-        actual = moles_from_grams(212, 'K2CrO4')
-        self.assertEqual(Measurement(Decimal('1.09'), 'mol'), actual)
-
-    def test_molarity_by_grams(self):
-        actual = molarity(Decimal('1.20'), Decimal('2.50'))
-        self.assertEqual(Measurement(Decimal('0.480'), 'mol/L'), actual)
-
-
-    def test_molarity_by_gram_measurement(self):
-        actual = molarity(Measurement(Decimal('1.20'), 'mol'), Measurement(Decimal('2.50'), 'L'))
-        self.assertEqual(Measurement(Decimal('0.480'), 'mol/L'), actual)
-
-    def test_molarity_invalid_unit_exception(self):
-        with self.assertRaises(InvalidUnitError):
-            molarity(Measurement(Decimal('1.20'), 'g'), Measurement(Decimal('2.50'), 'L'))
-
+    def test_composition_HCl(self):
+        actual = composition('HCl')
+        expected = [('1', 'H'), ('1', 'Cl')]
+        self.assertEqual(actual, expected)
 
 if __name__ == '__main__':
     unittest.main()
