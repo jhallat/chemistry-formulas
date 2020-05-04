@@ -45,6 +45,10 @@ class PeriodicTableTestCase(unittest.TestCase):
         hydrogen = self.periodictable.search('H')
         self.assertEqual(hydrogen.symbol, 'H')
 
+    def test_atomic_number_is_immutable(self):
+        hydrogen = self.periodictable.search('H')
+        with self.assertRaises(AttributeError):
+            hydrogen.atomic_number = 2
 
 
 if __name__ == '__main__':

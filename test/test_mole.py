@@ -4,6 +4,7 @@ from decimal import Decimal
 from measurement import Measurement, MOLES, LITERS, moles, liters, InvalidUnitError, GRAMS, milli, grams
 from mole import molar_mass, moles_from_grams, molarity, grams_in_solution, molarity_of_solution, moles_in_solution, \
     volume_from_solution
+from scinotation import Scinot
 
 
 class MoleTestCase(unittest.TestCase):
@@ -18,7 +19,8 @@ class MoleTestCase(unittest.TestCase):
 
     def test_moles_from_grams_K2CrO4(self):
         actual = moles_from_grams(212, 'K2CrO4')
-        self.assertEqual(Measurement(Decimal('1.09'), 'mol'), actual)
+        expected = Measurement(Scinot("1.09x10^0"), MOLES)
+        self.assertEqual(expected, actual)
 
     def test_molarity_by_grams(self):
         actual = molarity(Decimal('1.20'), Decimal('2.50'))
@@ -27,7 +29,8 @@ class MoleTestCase(unittest.TestCase):
 
     def test_molarity_by_gram_measurement(self):
         actual = molarity(Measurement(Decimal('1.20'), 'mol'), Measurement(Decimal('2.50'), 'L'))
-        self.assertEqual(Measurement(Decimal('0.480'), MOLES/LITERS), actual)
+        expected = Measurement(Scinot('4.80x10^-1'), MOLES/LITERS)
+        self.assertEqual(expected, actual)
 
     def test_molarity_with_convienience_methods(self):
         actual = molarity(moles('1.20'), liters('2.50'))
@@ -51,12 +54,13 @@ class MoleTestCase(unittest.TestCase):
 
     def test_grams_for_12mole_tenth_liter_HCl(self):
         actual = grams_in_solution(molarity('12.0'), molar_mass('HCl'), liters('0.100'))
-        self.assertEqual(Measurement(Decimal('43.8'), GRAMS), actual)
+        expected = Measurement(Scinot('4.38x10^1'), GRAMS)
+        self.assertEqual(expected, actual)
 
 
     def test_molarity_for_20g_of_K2CrO4_in_1L(self):
         actual = molarity_of_solution(grams('20.0'), molar_mass('K2CrO4'), liters('1.00'))
-        expected = Measurement(Decimal('0.103'), MOLES/LITERS)
+        expected = Measurement(Scinot('1.03x10^-1'), MOLES/LITERS)
         self.assertEqual(expected, actual)
 
     def test_moles_in_25ml_12mol_solution(self):

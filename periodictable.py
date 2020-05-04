@@ -10,14 +10,22 @@ class Singleton(type):
             cls._instances[cls] = instance
         return cls._instances[cls]
 
-## TODO make Element immutable
-class Element:
+class Element(object):
+
+    __slots__= ('atomic_number', 'symbol', 'name', 'atomic_mass')
 
     def __init__(self, atomic_number, symbol, name, atomic_mass):
-        self.atomic_number = atomic_number
-        self.symbol = symbol
-        self.name = name
-        self.atomic_mass = atomic_mass
+        object.__setattr__(self, 'atomic_number', atomic_number)
+        object.__setattr__(self, 'symbol', symbol)
+        object.__setattr__(self, 'name', name)
+        object.__setattr__(self, 'atomic_mass', atomic_mass)
+
+    def __setattr__(self, *args):
+        raise AttributeError("Element is immutable")
+
+    def __delattr__(self, *args):
+        raise AttributeError("Element is immutable")
+
 
     def __str__(self):
         return f"{self.name} ({self.atomic_number}, {self.symbol}, {self.atomic_mass})"
@@ -29,8 +37,6 @@ class PeriodicTable(object, metaclass=Singleton):
     def __init__(self):
         object.__setattr__(self, "table_symbol", {})
         object.__setattr__(self, "table_number", {})
-        # self.table_symbol = {}
-        #self.table_number = {}
         path = os.path.join(os.path.dirname(__file__), "periodic-table.dat")
         print(f"Initializing Periodic Table with data file '{path}'")
         data_file = open(path, "r")
@@ -40,9 +46,7 @@ class PeriodicTable(object, metaclass=Singleton):
             field = line.split(",")
             atomic_number, symbol, name, atomic_mass = field
             element = Element(atomic_number, symbol, name, atomic_mass)
-            #self.table_symbol[symbol] = element
             object.__getattribute__(self, "table_symbol")[symbol] = element
-            #self.table_number[atomic_number] = element
             object.__getattribute__(self, "table_number")[atomic_number] = element
         data_file.close()
 

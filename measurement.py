@@ -1,5 +1,8 @@
 from decimal import Decimal
 
+from scinotation import Scinot
+
+
 class InvalidUnitError(Exception):
     pass
 
@@ -62,11 +65,11 @@ GRAMS = Unit('g')
 LITERS = Unit('L')
 MOLES = Unit('mol')
 
-# TODO Convenience methods for measurements
+# TODO Should be immutable
 class Measurement:
 
     def __init__(self, value, unit):
-        self.value = Decimal(value)
+        self.value = Scinot(value)
         self.unit = Unit(unit)
 
     def __str__(self):
