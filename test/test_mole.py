@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from measurement import Measurement, MOLES, LITERS, moles, liters, InvalidUnitError, GRAMS, milli, grams
 from mole import molar_mass, moles_from_grams, molarity, grams_in_solution, molarity_of_solution, moles_in_solution, \
-    volume_from_solution
+    volume_from_solution, mass, molecules_in_mass
 from scinotation import Scinot
 
 
@@ -16,6 +16,11 @@ class MoleTestCase(unittest.TestCase):
     def test_molar_mass_C12H12O11(self):
         actual = molar_mass('C12H22O11')
         self.assertEqual(Measurement(Decimal('342.29'), 'g/mol'), actual)
+
+    def test_molar_mass_H2O2(self):
+        actual = molar_mass('H2O2')
+        expected = Measurement(Scinot('3.4014x10^1'), GRAMS / MOLES)
+        self.assertEqual(expected, actual)
 
     def test_moles_from_grams_K2CrO4(self):
         actual = moles_from_grams(212, 'K2CrO4')
@@ -70,6 +75,26 @@ class MoleTestCase(unittest.TestCase):
     def test_volume_for_1mole_in_12molar_solution(self):
         actual = volume_from_solution(moles('1.00'), molarity('12.0'))
         expected = Measurement(Decimal('0.0833'), LITERS)
+        self.assertEqual(expected, actual)
+
+    def test_mass_of_S(self):
+        actual = mass('S')
+        expected = Measurement(Scinot('5.325x10^-23'), GRAMS)
+        self.assertEqual(expected, actual)
+
+    def test_mass_of_H2O2(self):
+        actual = mass('H2O2')
+        expected = Measurement(Scinot('5.648x10^-23'), GRAMS)
+        self.assertEqual(expected, actual)
+
+    def test_molecules_in_1gram_S(self):
+        actual = molecules_in_mass('S', grams('1.000'))
+        expected = Measurement(Scinot('1.878x10^22'), 'atoms')
+        self.assertEqual(expected, actual)
+
+    def test_molecules_in_1gram_H2O2(self):
+        actual = molecules_in_mass('H2O2', grams('1.00'))
+        expected = Measurement(Scinot('1.77x10^22'), 'atoms')
         self.assertEqual(expected, actual)
 
 if __name__ == '__main__':

@@ -50,8 +50,11 @@ class Unit(object):
 
         simp_num = [i for i in numerator if i not in denominator]
         simp_den = [i for i in denominator if i not in numerator and not i == '1']
+        if len(simp_num) == 0:
+            simp_num += '1'
+        unit = Unit('*'.join(simp_num) + '/' + '*'.join(simp_den)) if len(simp_den) > 0 else Unit('*'.join(simp_num))
 
-        return Unit('*'.join(simp_num) + '/' + '*'.join(simp_den)) if len(simp_den) > 0 else Unit('*'.join(simp_num))
+        return unit
 
     def _reciprocal(self, unit):
         if '/' in unit.value:
@@ -64,6 +67,7 @@ class Unit(object):
 GRAMS = Unit('g')
 LITERS = Unit('L')
 MOLES = Unit('mol')
+ATOM = Unit('1')
 
 # TODO Should be immutable
 class Measurement:

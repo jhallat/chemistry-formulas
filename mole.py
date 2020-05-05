@@ -1,15 +1,21 @@
 from decimal import Decimal
 
 from chemformula import composition
-from measurement import Measurement, GRAMS, MOLES, validate_measurement, LITERS
+from measurement import Measurement, GRAMS, MOLES, validate_measurement, LITERS,ATOM
 from periodictable import PeriodicTable
 from scinotation import Scinot
 
-AVAGADROS_NUMBER = Scinot('6.022x10^-23')
+AVAGADROS_NUMBER = Scinot('6.022x10^23')
 
-def atom_mass(value: str) -> Scinot:
+def mass(value: str) -> Measurement:
     _molar_mass = molar_mass(value)
-    pass
+    return _molar_mass / Measurement(AVAGADROS_NUMBER, ATOM/MOLES)
+
+def molecules_in_mass(formula: str, grams: Measurement) -> Measurement:
+    _molar_mass = molar_mass(formula)
+    _grams = validate_measurement(grams, GRAMS)
+    _mass = _grams * Measurement(AVAGADROS_NUMBER, ATOM/MOLES) / _molar_mass
+    return Measurement(_mass.value, 'atoms')
 
 def molar_mass(formula):
     """Calculates the molar mass of a compound"""

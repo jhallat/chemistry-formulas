@@ -59,7 +59,7 @@ class Scinot:
     def parse(self, value):
         """Parses a string in the form of scientific notation"""
         _value = str(value)
-        result = match('-{0,}[0-9]((\.[0-9]{1,}){0,1}x10\^-{0,1}[0-9]{1,}){0,1}', _value)
+        result = match('-{0,}[0-9]((\.[0-9]{1,}){0,1}x10\^|E-{0,1}[0-9]{1,}){0,1}', _value)
         if not result:
             message = f"Invalid format for scientific notation '{_value}'"
             raise Exception(message)
@@ -72,7 +72,7 @@ class Scinot:
         if decimal_match:
             decimal = decimal_match[0]
     
-        exponent_match = search('(?<=\^)-{0,1}[0-9]{1,}', _value)
+        exponent_match = search('(?<=[\^,E])-{0,1}[0-9]{1,}', _value)
         exponent = exponent_match[0] if exponent_match else '0'
 
         while len(integral) > 1:
