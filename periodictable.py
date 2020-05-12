@@ -1,6 +1,9 @@
 import os
 
 ## TODO Probaly need to put this in a shared library
+from enum import Enum
+
+
 class Singleton(type):
     _instances = {}
 
@@ -9,6 +12,9 @@ class Singleton(type):
             instance = super().__call__(*args, **kwargs)
             cls._instances[cls] = instance
         return cls._instances[cls]
+
+
+
 
 class Element(object):
 

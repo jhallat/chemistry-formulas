@@ -144,9 +144,22 @@ class Scinot:
         return _round_to_sig_digits(total, digits)
 
     def __eq__(self, other):
+        if isinstance(other, int):
+            return self._eq_integer(other)
         if not isinstance(other, Scinot):
             return False
         return self._integral == other._integral and self._decimal == other._decimal and self._exponent == other._exponent
+
+    def _eq_integer(self, value: int) -> bool:
+        """Return true if notation equals 1"""
+
+        if not self._integral == value or not self._exponent == '0':
+            return False;
+
+        if len(self._decimal) == 0 or len(self._decimal) == self._decimal.count('0'):
+            return True
+        else:
+            return False
 
 
 
