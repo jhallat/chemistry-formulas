@@ -33,6 +33,7 @@ class Unit(object):
     def __eq__(self, other):
         return self.value == other.value
 
+
     def __mul__(self, other):
         multiplicand = self.value.split('/')
         multiplier = other.value.split('/')
@@ -84,6 +85,11 @@ class Measurement:
             return False
         return self.value == other.value and self.unit == other.unit
 
+    def __lt__(self, other):
+        if not isinstance(other, Measurement):
+            return self.value < other
+        return self.value < other.value
+
     def __truediv__(self, other):
         if isinstance(other, int):
             return Measurement(self.value / other, self.unit)
@@ -93,6 +99,8 @@ class Measurement:
         return Measurement(div_value, div_unit)
 
     def __mul__(self, other):
+        if not isinstance(other, Measurement):
+            return Measurement(self.value * other, self.unit)
         mul_value = self.value * other.value
         mul_unit = self.unit * other.unit
         return Measurement(mul_value, mul_unit)
@@ -106,13 +114,13 @@ def validate_measurement(value, unit):
     return Measurement(Decimal(value), unit)
 
 def grams(value):
-    return Measurement(Decimal(value), GRAMS)
+    return Measurement(Scinot(value), GRAMS)
 
 def liters(value):
-    return Measurement(Decimal(value), LITERS)
+    return Measurement(Scinot(value), LITERS)
 
 def moles(value):
-    return Measurement(Decimal(value), MOLES)
+    return Measurement(Scinot(value), MOLES)
 
 def milli(value):
     if not isinstance(value, Measurement):

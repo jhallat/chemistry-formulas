@@ -9,6 +9,12 @@ class ScientificNotationTest(unittest.TestCase):
         self.assertEqual('33', number._decimal)
         self.assertEqual('23', number._exponent)
 
+    def test_parse_small_decimal(self):
+        number = Scinot('0.0120')
+        self.assertEqual('1', number._integral)
+        self.assertEqual('20', number._decimal)
+        self.assertEqual('-2', number._exponent)
+
     def test_multiplication(self):
         number_one = Scinot('2.44x10^2')
         number_two = Scinot('3.1x10^1')

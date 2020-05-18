@@ -110,17 +110,13 @@ def _reduce(elements: [(Decimal, str)]) -> [(Decimal, str)]:
     element_map = {}
     reduced_elements = []
     for element in elements:
-        if element[1] in element_map:
-            current = element_map[element[1]]
-            current += element[0]
-            element_map[element[1]] = current
-        else:
-            element_map[element[1]] = element[0]
+        amount = element_map.get(element[1], Decimal(0.000))
+        amount += element[0]
+        element_map[element[1]] = amount
 
     for element in elements:
         if element[1] in element_map:
-            reduced_elements.append((element_map[element[1]], element[1]))
-            del element_map[element[1]]
+            reduced_elements.append((element_map.pop(element[1]), element[1]))
 
     return reduced_elements
 

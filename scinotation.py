@@ -57,6 +57,7 @@ class Scinot:
             self._integral, self._decimal, self._exponent = self.parse(value)
 
     def parse(self, value):
+
         """Parses a string in the form of scientific notation"""
         _value = str(value)
         result = match('-{0,}[0-9]((\.[0-9]{1,}){0,1}x10\^|E-{0,1}[0-9]{1,}){0,1}', _value)
@@ -64,13 +65,11 @@ class Scinot:
             message = f"Invalid format for scientific notation '{_value}'"
             raise Exception(message)
 
-        decimal = ''
         integral_match = search('-{0,1}[0-9]{1,}', _value)
         integral = integral_match[0]
 
         decimal_match = search('(?<=\.)[0-9]{1,}', _value)
-        if decimal_match:
-            decimal = decimal_match[0]
+        decimal = decimal_match[0] if decimal_match else ''
     
         exponent_match = search('(?<=[\^,E])-{0,1}[0-9]{1,}', _value)
         exponent = exponent_match[0] if exponent_match else '0'
@@ -149,6 +148,11 @@ class Scinot:
         if not isinstance(other, Scinot):
             return False
         return self._integral == other._integral and self._decimal == other._decimal and self._exponent == other._exponent
+
+    def __lt__(self, other):
+        if not isinstance(other, Scinot):
+            return self.decimal() < other
+        return self.decimal() < other.decimal()
 
     def _eq_integer(self, value: int) -> bool:
         """Return true if notation equals 1"""

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from formulaparser import parse_formula
 from measurement import Measurement, GRAMS, MOLES, validate_measurement, LITERS,ATOM
 from periodictable import PeriodicTable
@@ -18,7 +20,7 @@ def molecules_in_mass(formula: str, grams: Measurement) -> Measurement:
     else:
         return Measurement(_mass.value, 'atoms')
 
-def molar_mass(formula):
+def molar_mass(formula: str) -> Measurement:
     """Calculates the molar mass of a compound"""
 
     table = PeriodicTable()
@@ -26,7 +28,7 @@ def molar_mass(formula):
     for index, atom in enumerate(atoms):
         count, symbol = atom
         mass = Scinot(table.search(symbol).atomic_mass)
-        product = mass * int(count)
+        product = mass * Decimal(count)
         if index == 0:
             total_mass = product
         else:
@@ -92,4 +94,6 @@ def volume_from_solution(moles: Measurement, molarity: Measurement) -> Measureme
     _molarity = validate_measurement(molarity, MOLES / LITERS)
 
     return _moles / _molarity
+
+
 
