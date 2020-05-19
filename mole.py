@@ -27,7 +27,7 @@ def molar_mass(formula: str) -> Measurement:
     atoms = parse_formula(formula)
     for index, atom in enumerate(atoms):
         count, symbol = atom
-        mass = Scinot(table.search(symbol).atomic_mass)
+        mass = Scinot(table[symbol].atomic_mass)
         product = mass * Decimal(count)
         if index == 0:
             total_mass = product
