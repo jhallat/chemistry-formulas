@@ -1,29 +1,11 @@
+from collections import namedtuple
 from decimal import Decimal
 
 from formulaparser import parse_formula
 from measurement import Measurement, grams
 from mole import molar_mass, moles_from_grams
 
-
-class Component:
-
-    def __init__(self, count: Decimal, symbol: str, mass: Measurement, mass_percent: Decimal):
-        self.count = int(count)
-        self.symbol = symbol
-        self.mass = mass
-        self.mass_percent = mass_percent
-
-    def __str__(self):
-        return f'{self.symbol}({self.count}, {self.mass_percent}, {self.mass})'
-
-    def __eq__(self, other):
-        if not isinstance(other, Component):
-            return False
-        return self.count == other.count and \
-               self.symbol == other.symbol and \
-               self.mass_percent == other.mass_percent and \
-               self.mass == other.mass
-
+Component = namedtuple("Component", "count symbol mass mass_percent")
 
 def composition(formula: str, mass:Measurement = grams('1.000') ) -> [Component]:
     _composition = parse_formula(formula)

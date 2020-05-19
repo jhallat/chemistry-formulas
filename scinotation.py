@@ -105,7 +105,7 @@ class Scinot:
             _decver = Decimal(self._integral)
         return _decver * Decimal(10 ** int(self._exponent))
 
-    def __str__(self):
+    def __repr__(self):
         if self._decimal:
             return self._integral + '.' + self._decimal + 'x10^' + self._exponent
         return self._integral + 'x10^' + self._exponent
