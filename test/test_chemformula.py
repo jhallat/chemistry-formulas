@@ -47,5 +47,13 @@ class ChemicalFormulaTestCase(unittest.TestCase):
         expected = "K2Cr2O7"
         self.assertEqual(expected, actual)
 
+    def test_formula_of_C_H_O(self):
+        elements = [('C', grams('2.61')),
+                    ('H', grams('0.658')),
+                    ('O', grams('1.73'))]
+        actual = formula_from_mass(elements)
+        expected = "C2H6O"
+        self.assertEqual(expected, actual)
+
 if __name__ == '__main__':
     unittest.main()

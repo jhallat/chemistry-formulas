@@ -33,5 +33,13 @@ class ScientificNotationTest(unittest.TestCase):
         number_two = Scinot('1.53x10^2')
         self.assertFalse(number_one == number_two)
 
+    def test_subtraction(self):
+        number_one = Scinot('5.00x10^0')
+        number_two = Scinot('2.61x10^0')
+        number_three = Scinot('6.57x10^-1')
+        actual = number_one - number_two - number_three
+        expected = Scinot('1.73x10^0')
+        self.assertEqual(expected, actual)
+
 if __name__ == '__main__':
     unittest.main()

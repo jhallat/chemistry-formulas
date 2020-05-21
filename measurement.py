@@ -105,6 +105,12 @@ class Measurement:
         mul_unit = self.unit * other.unit
         return Measurement(mul_value, mul_unit)
 
+    def __sub__(self, other):
+        if self.unit != other.unit:
+            raise InvalidUnitError("Cannot subtract non matching units")
+        else:
+            return Measurement(self.value - other.value, self.unit)
+
 def validate_measurement(value, unit):
     if isinstance(value, Measurement):
         if value.unit == Unit(unit):

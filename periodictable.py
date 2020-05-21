@@ -23,7 +23,7 @@ class PeriodicTable(object, metaclass=Singleton):
 
     def __init__(self):
         path = os.path.join(os.path.dirname(__file__), "periodic-table.dat")
-        print(f"Initializing Periodic Table with data file '{path}'")
+        #print(f"Initializing Periodic Table with data file '{path}'")
         data_file = open(path, "r")
         data = data_file.read()
         elements = [Element(*tuple(line.split(','))) for line in data.split('\n')]
