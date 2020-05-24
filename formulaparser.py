@@ -120,20 +120,18 @@ def _reduce(elements: [(Decimal, str)]) -> [(Decimal, str)]:
 
     return reduced_elements
 
-#TODO add a precision parameter for multiply coefficient with subscript. Default = 3
-def parse_formula(formula: str) -> (str, str):
-
+def _process_tokens(tokens: [_FormulaToken]):
     STATE_START = 1
     STATE_COEFFICIENT = 2
     STATE_SYMBOL = 3
     STATE_SUBSCRIPT = 4
 
-    tokens = _tokenize(formula)
     elements = []
     state = STATE_START
     coefficient = Decimal('1.000')
     symbol = ''
-    for token in tokens:
+
+    for index, token in enumerate(tokens):
         if state == STATE_START:
             if token.type == _FormulaTokenType.COEFFICIENT:
                 coefficient = Decimal(token.value)
@@ -164,7 +162,8 @@ def parse_formula(formula: str) -> (str, str):
                 elements.append((coefficient, symbol))
                 symbol = ''
                 coefficient = Decimal('1.000')
-                state = STATE_START
+                elements.append(_process_tokens(tokens[index + 1:]))
+                break
             else:
                 raise FormulaParseError(f"expected symbol, subscript or '*' at token '{token.value}'")
             continue
@@ -175,12 +174,21 @@ def parse_formula(formula: str) -> (str, str):
             elif token.type == _FormulaTokenType.COMBINDED_WITH:
                 symbol = ''
                 coefficient = Decimal('1.000')
-                state = STATE_START
+                elements.append(_process_tokens(tokens[index + 1:]))
+                break
             else:
                 raise FormulaParseError(f"expected symbol or '*' at token '{token.value}'")
 
     if len(symbol) > 0 and state == STATE_SYMBOL:
         elements.append((coefficient, symbol))
 
-    return _reduce(elements)
+    return elements
+
+#TODO add a precision parameter for multiply coefficient with subscript. Default = 3
+def parse_formula(formula: str):
+
+    tokens = _tokenize(formula)
+    return _process_tokens(tokens)
+
+
 

@@ -24,7 +24,7 @@ class Unit(object):
         raise AttributeError("Unit is immutable")
 
 
-    def __str__(self):
+    def __repr__(self):
         return self.value
 
     def __truediv__(self, other):
@@ -77,8 +77,9 @@ class Measurement:
         self.value = Scinot(value)
         self.unit = Unit(unit)
 
-    def __str__(self):
+    def __repr__(self):
         return str(self.value) + ' ' + str(self.unit)
+
 
     def __eq__(self, other):
         if not isinstance(other, Measurement):
@@ -110,6 +111,13 @@ class Measurement:
             raise InvalidUnitError("Cannot subtract non matching units")
         else:
             return Measurement(self.value - other.value, self.unit)
+
+    def __add__(self, other):
+       if self.unit != other.unit:
+           raise InvalidUnitError("Cannot subtract non matching units")
+       else:
+           return Measurement(self.value + other.value, self.unit)
+
 
 def validate_measurement(value, unit):
     if isinstance(value, Measurement):

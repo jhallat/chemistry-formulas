@@ -20,20 +20,25 @@ def molecules_in_mass(formula: str, grams: Measurement) -> Measurement:
     else:
         return Measurement(_mass.value, 'atoms')
 
+def _molar_mass(atoms):
+    total_mass = Measurement("0", GRAMS / MOLES)
+    table = PeriodicTable()
+    for index, atom in enumerate(atoms):
+        if isinstance(atom, list):
+            total_mass += _molar_mass(atom)
+        else:
+            count, symbol = atom
+            mass = Scinot(table[symbol].atomic_mass)
+            product = Measurement(mass * Decimal(count), GRAMS / MOLES)
+            total_mass += product
+    return total_mass
+
+
 def molar_mass(formula: str) -> Measurement:
     """Calculates the molar mass of a compound"""
 
-    table = PeriodicTable()
     atoms = parse_formula(formula)
-    for index, atom in enumerate(atoms):
-        count, symbol = atom
-        mass = Scinot(table[symbol].atomic_mass)
-        product = mass * Decimal(count)
-        if index == 0:
-            total_mass = product
-        else:
-            total_mass += product
-    return Measurement(total_mass, GRAMS / MOLES)
+    return _molar_mass(atoms)
 
 
 def moles_from_grams(grams, formula):

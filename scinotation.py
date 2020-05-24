@@ -107,6 +107,11 @@ class Scinot:
 
         return Scinot(_number[0] + '.' + _number[1:] + 'x10^' + str(_exponent))
 
+
+    def __int__(self):
+        dec_value = self.decimal()
+        return int(dec_value)
+
     def __repr__(self):
         if self._decimal:
             return self._integral + '.' + self._decimal + 'x10^' + self._exponent
@@ -141,7 +146,10 @@ class Scinot:
 
     def __add__(self, other):
         total = Scinot(self.decimal() + other.decimal())
-        digits = min(self.sig_digits(), other.sig_digits())
+        is_self_zero = self == 0
+        is_other_zero = other == 0
+        non_zero = [value.sig_digits() for value in [self, other] if value != 0]
+        digits = min(non_zero)
         return round(total, digits)
 
     def __sub__(self, other):
@@ -164,7 +172,7 @@ class Scinot:
     def _eq_integer(self, value: int) -> bool:
         """Return true if notation equals 1"""
 
-        if not self._integral == value or not self._exponent == '0':
+        if not self._integral == str(value) or not self._exponent == '0':
             return False;
 
         if len(self._decimal) == 0 or len(self._decimal) == self._decimal.count('0'):
