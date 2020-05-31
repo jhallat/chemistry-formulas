@@ -1,6 +1,7 @@
 from decimal import Decimal
 
-from chemformula import composition, Component, formula_from_percent, formula_from_mass, mol_formula_from_simple_formula
+from chemformula import composition, Component, formula_from_percent, formula_from_mass, \
+    mol_formula_from_simple_formula, predict_formula, compound_name
 from measurement import grams
 from scinotation import Scinot
 
@@ -60,3 +61,48 @@ def test_mol_formula_of_vitamin_c():
     actual = mol_formula_from_simple_formula("C3H4O3", Decimal('180'))
     expected = "C6H8O6"
     assert expected == actual
+
+def test_predict_lithium_and_oxygen():
+    actual = predict_formula('Li + O')
+    expected = 'Li2O'
+    assert expected == actual
+
+def test_predict_chlorine_and_magnesium():
+    actual = predict_formula('Cl + Mg')
+    expected = 'MgCl2'
+    assert expected == actual
+
+def test_predict_nickel_and_sulfur():
+    actual = predict_formula(['Ni', 'S'])
+    expected = 'NiS'
+    assert expected == actual
+
+def test_predict_barium_and_hydroxide():
+    actual = predict_formula('Ba + OH')
+    expected = 'Ba(OH)2'
+    assert expected == actual
+
+def test_predict_potassium_and_sulfate():
+    actual = predict_formula(['SO4', 'K'])
+    expected = 'K2(SO4)'
+    assert expected == actual
+
+def test_predict_ammonium_and_phosphate():
+    actual = predict_formula('NH4 + PO4')
+    expected = '(NH4)3PO4'
+    assert expected == actual
+
+def test_predict_zinc_and_silver():
+    actual = predict_formula('Zn + Ag')
+    expected = 'Zn + Ag'
+    assert actual == expected
+
+def test_compound_name_NaCl():
+    actual = compound_name('NaCl')
+    expected = 'sodium chloride'
+    assert actual == expected
+
+def test_compound_name_K2SO4():
+    actual = compound_name('K2SO4')
+    expected = 'potassium sulfate'
+    assert actual == expected

@@ -4,10 +4,47 @@ Created on Sun Apr 12 14:06:21 2020
 
 @author: John Hallat
 """
+from math import floor
 from re import match, search
+from fractions import Fraction
 from decimal import Decimal
 
+class Count:
+    """Class for numbers that represent an exact count. These values do not affect
+    the count of significant digits in calculations with Scinot (scientific notation) values"""
 
+    def __init__(self, value):
+        self.value = Fraction(value)
+
+    def __repr__(self):
+        return str(self.value)
+
+    def __eq__(self, other):
+        if isinstance(other, Count):
+            return self.value == other.value
+        else:
+            return self.value == Fraction(other)
+
+    def __gt__(self, other):
+        if isinstance(other, Count):
+            return self.value > other.value
+        else:
+            return self.value > Fraction(other)
+
+    def __add__(self, other):
+        if isinstance(other, Count):
+            return Count(self.value + other.value)
+        else:
+            return Count(self.value + Fraction(other))
+
+    def __mul__(self, other):
+        if isinstance(other, Count):
+            return Count(self.value * other.value)
+        else:
+            return Count(self.value * Fraction(other))
+
+    def __int__(self):
+        return floor(self.value)
 
 ## TODO Should be immutable
 class Scinot:
@@ -122,6 +159,10 @@ class Scinot:
         if isinstance(other, Scinot):
             multiplier = other.decimal()
             digits = min(self.sig_digits(), other.sig_digits())
+        elif isinstance(other, Count):
+            value = other.value.limit_denominator()
+            multiplier = Decimal(value.numerator / value.denominator)
+            digits = self.sig_digits()
         else:
             multiplier = Decimal(other)
             digits = self.sig_digits()

@@ -17,19 +17,18 @@ class Singleton(type):
 
 
 Element = namedtuple('Element', ['atomic_number', 'symbol', 'name', 'atomic_mass'])
-
+Ion = namedtuple('Ion', ['symbol', 'charge'])
 
 class PeriodicTable(object, metaclass=Singleton):
 
     def __init__(self):
-        path = os.path.join(os.path.dirname(__file__), "periodic-table.dat")
-        #print(f"Initializing Periodic Table with data file '{path}'")
-        data_file = open(path, "r")
-        data = data_file.read()
-        elements = [Element(*tuple(line.split(','))) for line in data.split('\n')]
-        self._table_symbol = {element.symbol:element for element in elements}
-        self._table_number = { element.atomic_number : element for element in elements }
-        data_file.close()
+        path = os.path.join(os.path.dirname(__file__), "data/periodic-table.dat")
+        with open(path, "r") as data_file:
+            data = data_file.read()
+            elements = [Element(*tuple(line.split(','))) for line in data.split('\n')]
+            self._table_symbol = {element.symbol:element for element in elements}
+            self._table_number = { element.atomic_number : element for element in elements }
+
 
     def __len__(self):
         return len(self._table_symbol)
@@ -42,5 +41,20 @@ class PeriodicTable(object, metaclass=Singleton):
             return self._table_symbol[item]
 
 
+class Ions(object, metaclass=Singleton):
 
+    def __init__(self):
+        path = os.path.join(os.path.dirname(__file__), "data/common-ions.dat")
+        with open(path, "r") as data_file:
+            data = data_file.read()
+            ions = []
+            for line in data.split('\n'):
+                data_line = line.split(',')
+                ions.append(Ion(data_line[0], int(data_line[1])))
+            self._ions = {ion.symbol: ion for ion in ions}
 
+    def __len__(self):
+        return len(self._ions)
+
+    def __getitem__(self, item):
+        return self._ions[item]

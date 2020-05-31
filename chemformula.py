@@ -1,9 +1,10 @@
 from collections import namedtuple
 from decimal import Decimal
 
-from formulaparser import parse_formula
+from formula.parser import parse_formula, parse_ion_equation
 from measurement import Measurement, grams, validate_measurement, GRAMS, MOLES
 from mole import molar_mass, moles_from_grams
+from periodictable import PeriodicTable
 
 Component = namedtuple("Component", "count symbol mass mass_percent")
 
@@ -48,23 +49,35 @@ class Composition:
             #TODO return a more readable representation
             return str(self)
 
-def _recursive_composition(_composition, _molar_mass, mass:Measurement = grams('1.000') ) -> [Component]:
-    composition = Composition()
-    for element in _composition:
-        if isinstance(element, list):
-            composition.append(_recursive_composition(element, _molar_mass, mass))
-        else:
-            count, symbol = element
-            _mass_percent = molar_mass(symbol)/_molar_mass
-            _mass_percent = _mass_percent.value.decimal() * int(count)
-            _mass = mass * _mass_percent
-            _mass_percent = round(_mass_percent * 100, 2)
-            composition.append(Component(count, symbol, _mass, _mass_percent))
-
-    return composition
+# def _recursive_composition(_composition, _molar_mass, mass:Measurement = grams('1.000') ) -> [Component]:
+#     composition = Composition()
+#     for element in _composition:
+#         if isinstance(element, list):
+#             composition.append(_recursive_composition(element, _molar_mass, mass))
+#         else:
+#             count, symbol = element
+#             _mass_percent = molar_mass(symbol)/_molar_mass
+#             _mass_percent = _mass_percent.value.decimal() * int(count)
+#             _mass = mass * _mass_percent
+#             _mass_percent = round(_mass_percent * 100, 2)
+#             composition.append(Component(count, symbol, _mass, _mass_percent))
+#
+#     return composition
 
 def composition(formula: str, mass:Measurement = grams('1.000') ) -> [Component]:
-    return _recursive_composition(parse_formula(formula), molar_mass(formula), mass)
+
+    composition = Composition()
+    elements = parse_formula(formula).flatten()
+    _molar_mass = molar_mass(elements)
+    for element in elements:
+       count, symbol = element
+       _mass_percent = molar_mass(symbol)/_molar_mass
+       _mass_percent = _mass_percent.value.decimal() * int(count)
+       _mass = mass * _mass_percent
+       _mass_percent = round(_mass_percent * 100, 2)
+       composition.append(Component(count, symbol, _mass, _mass_percent))
+
+    return composition
 
 
 def formula_from_percent(elements: [(str, Decimal)], molar_mass = None) -> str:
@@ -116,3 +129,67 @@ def _simplify(numbers: [Decimal]) -> Decimal:
         with_decimal = [number for number in _numbers if number - int(number) >= 0.1]
 
     return [round(number,0) for number in _numbers]
+
+def is_polyatomic(ion: str):
+    return len([char for char in ion if char.isupper()]) > 1
+
+def predict_formula(products):
+    """Predicts the formula of combining two ions.
+
+    Ions can be added as a string:
+    >>> predict_formula('Li + O')
+    'Li2O'
+
+    or as a list:
+    >>> predict_formula(['Ni', 'S'])
+    'NiS'
+
+    if the ions are valid, but a formula cannot be predicted,
+    the original ions are returned
+    >>> predict_formula(['Zn','Ag'])
+    'Zn + Ag'
+
+    """
+    if isinstance(products, list):
+        ions = parse_ion_equation(' + '.join(products))
+    else:
+        ions = parse_ion_equation(products)
+    if len(ions) == 1:
+        return ions[1].symbol
+    if (ions[0].charge * ions[1].charge) > 0:
+        return f'{ions[0].symbol} + {ions[1].symbol}'
+
+    positive, negative = (ions[0], ions[1]) if ions[0].charge > ions[1].charge else (ions[1], ions[0])
+    product_charge = abs(positive.charge * negative.charge)
+    positive_subscript = product_charge // positive.charge
+    negative_subscript = abs(product_charge // negative.charge)
+    if positive_subscript == negative_subscript:
+        positive_subscript, negative_subscript = 1,1
+    p_symbol = positive.symbol
+    n_symbol = negative.symbol
+    if is_polyatomic(p_symbol):
+        p_symbol = '(' + p_symbol + ')'
+    else:
+        if is_polyatomic(n_symbol):
+            n_symbol = '(' + n_symbol + ')'
+    formula = p_symbol
+    formula += str(positive_subscript) if positive_subscript > 1 else ''
+    formula += n_symbol
+    formula += str(negative_subscript) if negative_subscript > 1 else ''
+    return formula
+
+def compound_name(formula):
+    ptable = PeriodicTable()
+    components = parse_formula(formula);
+    if len(components) == 2:
+        elements = [ptable[component[1]] for component in components]
+        return _format_cation(elements[0].name) + ' ' + _format_anion(elements[1].name)
+    else:
+        return 'unknown'
+
+def _format_cation(name):
+    return name.lower()
+
+def _format_anion(name):
+    stem = name.split('-')[0]
+    return stem.lower() + 'ide'
