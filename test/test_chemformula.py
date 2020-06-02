@@ -84,7 +84,7 @@ def test_predict_barium_and_hydroxide():
 
 def test_predict_potassium_and_sulfate():
     actual = predict_formula(['SO4', 'K'])
-    expected = 'K2(SO4)'
+    expected = 'K2SO4'
     assert expected == actual
 
 def test_predict_ammonium_and_phosphate():
@@ -97,6 +97,21 @@ def test_predict_zinc_and_silver():
     expected = 'Zn + Ag'
     assert actual == expected
 
+def test_predict_barium_hydroxide():
+    actual = predict_formula('barium hydroxide')
+    expected = 'Ba(OH)2'
+    assert actual == expected
+
+def test_predict_pottasium_sulfate():
+    actual = predict_formula('potassium sulfate')
+    expected = 'K2SO4'
+    assert actual == expected
+
+def test_predict_ammonium_phosphate():
+    actual = predict_formula('ammonium phosphate')
+    expected = '(NH4)3PO4'
+    assert actual == expected
+
 def test_compound_name_NaCl():
     actual = compound_name('NaCl')
     expected = 'sodium chloride'
@@ -105,4 +120,19 @@ def test_compound_name_NaCl():
 def test_compound_name_K2SO4():
     actual = compound_name('K2SO4')
     expected = 'potassium sulfate'
+    assert actual == expected
+
+def test_compound_name_Zn_NO3_2():
+    actual = compound_name('Zn(NO3)2')
+    expected = 'zinc nitrate'
+    assert actual == expected
+
+def test_compound_name_FeCl2():
+    actual = compound_name('FeCl2')
+    expected = 'iron(II) chloride'
+    assert actual == expected
+
+def test_compound_name_Al_NO3_3():
+    actual = compound_name('Al(NO3)3')
+    expected = 'aluminum nitrate'
     assert actual == expected

@@ -1,6 +1,9 @@
 from _decimal import Decimal
 from enum import Enum
 
+from periodictable import Ions
+
+
 class FormulaTokenizeError(Exception):
     pass
 
@@ -65,11 +68,13 @@ def state_coefficient(pos, char, token, tokens):
     return state, token, tokens
 
 
-def state_symbol(pos, char, token, tokens, polyatomic):
+def state_symbol(pos, char, token, tokens, polyatomic, ion, start_pos):
     if char.isalpha():
         if char.isupper():
             tokens.append(FormulaToken(FormulaTokenType.SYMBOL, token))
+            ion.append(token)
             token = char
+            start_pos.append(pos - len(token))
         else:
             token += char
         state = TokenState.SYMBOL
@@ -99,7 +104,7 @@ def state_symbol(pos, char, token, tokens, polyatomic):
             raise FormulaTokenizeError(f'invalid character {char} at position {pos}')
     else:
         raise FormulaTokenizeError(f'invalid character {char} at position {pos}')
-    return state, token, tokens, polyatomic
+    return state, token, tokens, polyatomic, ion, start_pos
 
 
 def state_expect_symbol(pos, char):
@@ -111,20 +116,26 @@ def state_expect_symbol(pos, char):
     return state, token
 
 
-def state_subscript(pos, char, token, tokens, polyatomic):
+def state_subscript(pos, char, token, tokens, polyatomic, ion, start_pos):
     if char.isdigit():
         token += char
         state = TokenState.SUBSCRIPT
     elif char.isalpha():
+        ion.append(tokens[-1].value + token)
+        start_pos.append(pos - len(tokens[-1].value + token))
         tokens.append(FormulaToken(FormulaTokenType.SUBSCRIPT, token))
         token = char
         state = TokenState.SYMBOL
     elif char == '*':
+        ion.append(tokens[-1].value + token)
+        start_pos.append(pos - len(tokens[-1].value + token))
         tokens.append(FormulaToken(FormulaTokenType.SUBSCRIPT, token))
         tokens.append(FormulaToken(FormulaTokenType.COMBINDED_WITH, '*'))
         token = ''
         state = TokenState.START
     elif char == '(':
+        ion.append(tokens[-1].value + token)
+        start_pos.append(pos - len(tokens[-1].value + token))
         tokens.append(FormulaToken(FormulaTokenType.SUBSCRIPT, token))
         tokens.append(FormulaToken(FormulaTokenType.POLYATOMIC_START, '('))
         token = ''
@@ -141,7 +152,7 @@ def state_subscript(pos, char, token, tokens, polyatomic):
             raise FormulaTokenizeError(f'invalid character {char} at position {pos}')
     else:
         raise FormulaTokenizeError(f'invalid character {char} at position {pos}')
-    return state, token, tokens, polyatomic
+    return state, token, tokens, polyatomic, ion, start_pos
 
 
 def state_polyatomic_end(pos, char, tokens):
@@ -167,30 +178,63 @@ def state_polyatomic_end(pos, char, tokens):
 
 
 def tokenize(formula: str) -> [FormulaToken]:
+    ions = Ions()
     tokens = []
     token = ''
     state = TokenState.START
     polyatomic = False
+    start_pos = []
+    ion = []
     for pos, char in enumerate(formula):
         if state == TokenState.START:
+            start_pos.clear()
+            ion.clear()
             state, token, tokens, polyatomic = state_start(pos, char, tokens, polyatomic)
         elif state == TokenState.COEFFICIENT:
             state, token, tokens = state_coefficient(pos, char, token, tokens)
         elif state == TokenState.SYMBOL:
-            state, token, tokens, polyatomic = state_symbol(pos, char, token, tokens, polyatomic)
+            state, token, tokens, polyatomic, ion, start_pos = \
+                state_symbol(pos, char, token, tokens, polyatomic, ion, start_pos)
         elif state == TokenState.EXPECT_SYMBOL:
             state, token = state_expect_symbol(pos, char)
         elif state == TokenState.SUBSCRIPT:
-            state, token, tokens, polyatomic = state_subscript(pos, char, token, tokens, polyatomic)
+            state, token, tokens, polyatomic, ion, start_pos = \
+                state_subscript(pos, char, token, tokens, polyatomic, ion, start_pos)
         elif state == TokenState.POLYATOMIC_END:
             state, token, tokens, polyatomic = state_polyatomic_end(pos, char, tokens)
+        if len(start_pos) == 3:
+            print(''.join(ion), end = ' - ')
+            print(start_pos, end = ' = ')
+            print(''.join(ion) in ions)
+            start_pos = start_pos[1:]
+            ion = ion[1:]
+        if len(start_pos) == 2:
+            print(''.join(ion), end = ' - ')
+            print(start_pos, end=' = ')
+            print(''.join(ion) in ions)
+        if polyatomic:
+            start_pos.clear()
+            ion.clear()
+
 
     if len(token) > 0:
         if state == TokenState.SUBSCRIPT:
+            ion.append(tokens[-1].value + token)
             tokens.append(FormulaToken(FormulaTokenType.SUBSCRIPT, token))
+            start_pos.append(-1)
         elif state == TokenState.SYMBOL:
             tokens.append(FormulaToken(FormulaTokenType.SYMBOL, token))
+            ion.append(token)
+            start_pos.append(-1)
         else:
             raise FormulaTokenizeError(f'unexpected formula termination')
 
+    print(''.join(ion), end = ' - ')
+    print(start_pos, end = ' = ')
+    print(''.join(ion) in ions)
+    if (len(start_pos) == 3):
+        if ''.join(ion[1:]) in ions:
+            tokens.insert(start_pos[1], FormulaToken(FormulaTokenType.POLYATOMIC_START, '('))
+            tokens.append( FormulaToken(FormulaTokenType.POLYATOMIC_END, ')'))
+    print(tokens)
     return tokens

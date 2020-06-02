@@ -17,7 +17,7 @@ class Singleton(type):
 
 
 Element = namedtuple('Element', ['atomic_number', 'symbol', 'name', 'atomic_mass'])
-Ion = namedtuple('Ion', ['symbol', 'charge'])
+Ion = namedtuple('Ion', 'symbol name charge')
 
 class PeriodicTable(object, metaclass=Singleton):
 
@@ -40,6 +40,11 @@ class PeriodicTable(object, metaclass=Singleton):
         else:
             return self._table_symbol[item]
 
+    def __contains__(self, item):
+        if str(item).isnumeric():
+            return str(item) in self._table_number
+        else:
+            return item in self._table_symbol
 
 class Ions(object, metaclass=Singleton):
 
@@ -50,11 +55,25 @@ class Ions(object, metaclass=Singleton):
             ions = []
             for line in data.split('\n'):
                 data_line = line.split(',')
-                ions.append(Ion(data_line[0], int(data_line[1])))
+                if len(data_line) == 3:
+                    charge = int(data_line[2])
+                else:
+                    charge = [int(item) for item in data_line[2:]]
+                ions.append(Ion(data_line[0], data_line[1], charge))
             self._ions = {ion.symbol: ion for ion in ions}
+            self._names = {ion.name: ion for ion in ions}
 
     def __len__(self):
         return len(self._ions)
 
     def __getitem__(self, item):
-        return self._ions[item]
+        if item in self._ions:
+            return self._ions[item]
+        else:
+            return self._names[item]
+
+    def __contains__(self, item):
+        if item in self._ions:
+            return True
+        else:
+            return item in self._names

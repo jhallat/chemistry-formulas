@@ -46,7 +46,23 @@ def test_parse_formula_BaOH2():
     ]))
     assert actual == expected
 
+def test_parse_formula_K2SO4():
+    actual = parse_formula('K2SO4')
+    expected = FormulaRoot('K2SO4', [])
+    expected.children.append(FormulaNode(Count(1), 'K2SO4', FormulaNodeType.COMPOUND, [
+        FormulaNode(Count(2), 'K', FormulaNodeType.ATOM, []),
+        FormulaNode(Count(1), 'SO4', FormulaNodeType.POLYATOMIC_ION, [
+            FormulaNode(Count(1), 'S', FormulaNodeType.ATOM, []),
+            FormulaNode(Count(4), 'O', FormulaNodeType.ATOM, [])
+        ])
+    ]))
+    assert actual == expected
+
 def test_parse_equation_Li_and_O():
     actual = parse_ion_equation('Li + O')
-    expected = [Ion('Li', 1), Ion('O', -2)]
+    expected = [Ion('Li','lithium', 1), Ion('O', 'oxy-gen', -2)]
     assert actual == expected
+
+def test_parse_equation_K_and_SO4():
+    actual = parse_ion_equation('K + SO4')
+    expected = [Ion('K', 'pottsium', 1), Ion('SO4', 'sulfate', -2)]

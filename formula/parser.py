@@ -35,6 +35,9 @@ class FormulaRoot:
     def __repr__(self):
         return f"formula_root(symbol='{self.symbol},children={self.children}'"
 
+    def __getitem__(self, item):
+        return self.children[item]
+
     def flatten(self):
         atoms = []
         for compound in self.children:
@@ -160,10 +163,8 @@ def _parse_pass_two(tokens: [FormulaToken], polyatomic = False):
         
         elif state == ParseState.SUBSCRIPT:
             if isinstance(token, list):
-                atoms.append(FormulaNode(Count(token.value), symbol, FormulaNodeType.ATOM, []))
                 ion = _parse_pass_two(token, True)
                 atoms.append(ion)
-                compound += ion.symbol
                 if ion.count > 1:
                     compound += f'({ion.symbol}){str(ion.count)}'
                 else:
@@ -230,6 +231,8 @@ def _parse_pass_one(tokens):
                 polyatomic = []
                 compound.append(token)
                 state = COMPOUND
+    if polyatomic:
+        compound.append(polyatomic)
     root.append(compound)
     return root
 
@@ -238,7 +241,9 @@ def _parse_pass_one(tokens):
 def parse_formula(formula: str):
 
     tokens = tokenize(formula)
+    print(tokens)
     root = _parse_pass_one(tokens)
+    print(root)
     children = [_parse_pass_two(compound) for compound in root]
     return FormulaRoot(formula, children)
 
@@ -247,7 +252,10 @@ def parse_ion_equation(equation: str):
 
     ions = Ions()
     parts = equation.split('->')
-    reactants = [ions[reactant.strip()] for reactant in parts[0].split('+')]
+    if '+' in parts[0]:
+        reactants = [ions[reactant.strip()] for reactant in parts[0].split('+')]
+    else:
+        reactants = [ions[reactant.strip()] for reactant in parts[0].split()]
     return reactants
 
 

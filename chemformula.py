@@ -1,10 +1,10 @@
 from collections import namedtuple
 from decimal import Decimal
 
-from formula.parser import parse_formula, parse_ion_equation
+from formula.parser import parse_formula, parse_ion_equation, FormulaNodeType
 from measurement import Measurement, grams, validate_measurement, GRAMS, MOLES
 from mole import molar_mass, moles_from_grams
-from periodictable import PeriodicTable
+from periodictable import PeriodicTable, Ions, Ion
 
 Component = namedtuple("Component", "count symbol mass mass_percent")
 
@@ -167,11 +167,10 @@ def predict_formula(products):
         positive_subscript, negative_subscript = 1,1
     p_symbol = positive.symbol
     n_symbol = negative.symbol
-    if is_polyatomic(p_symbol):
+    if is_polyatomic(p_symbol) and positive_subscript > 1:
         p_symbol = '(' + p_symbol + ')'
-    else:
-        if is_polyatomic(n_symbol):
-            n_symbol = '(' + n_symbol + ')'
+    if is_polyatomic(n_symbol) and negative_subscript > 1:
+        n_symbol = '(' + n_symbol + ')'
     formula = p_symbol
     formula += str(positive_subscript) if positive_subscript > 1 else ''
     formula += n_symbol
@@ -179,17 +178,34 @@ def predict_formula(products):
     return formula
 
 def compound_name(formula):
-    ptable = PeriodicTable()
-    components = parse_formula(formula);
+    periodic_table = PeriodicTable()
+    ions = Ions()
+    root = parse_formula(formula)
+    components = root[0].children
     if len(components) == 2:
-        elements = [ptable[component[1]] for component in components]
-        return _format_cation(elements[0].name) + ' ' + _format_anion(elements[1].name)
+        cation = _find_ion(components[0], periodic_table, ions)
+        anion = _find_ion(components[1], periodic_table, ions)
+        first = cation.name
+        if isinstance(cation.charge, list):
+            total_charge = abs(int(components[1].count) * anion.charge)
+            first += ('(' + ('I' * total_charge) + ')')
+        second = anion.name
+        if '-' in second:
+            second = second.split('-')[0] + 'ide'
+        return  first + ' ' + second
     else:
         return 'unknown'
 
-def _format_cation(name):
-    return name.lower()
-
-def _format_anion(name):
-    stem = name.split('-')[0]
-    return stem.lower() + 'ide'
+def _find_ion(component, ptable, ions):
+    if component.type == FormulaNodeType.ATOM:
+        if component.symbol in ions:
+            return ions[component.symbol]
+        elif component.symbol in ptable:
+            atom = ptable[component.symbol]
+            #TODO at some point periodic table should store charges, but 0
+            #is ok at this point
+            return Ion(atom.symbol, atom.name, 0)
+    if component.type == FormulaNodeType.POLYATOMIC_ION:
+        if component.symbol in ions:
+            return ions[component.symbol]
+    return Ion('','unknown',0)
