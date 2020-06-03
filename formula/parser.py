@@ -3,7 +3,7 @@ from decimal import Decimal
 from enum import Enum
 
 from formula.tokenizer import FormulaToken, FormulaTokenType, tokenize
-from periodictable import Ions
+from periodictable import Ions, PeriodicTable, Ion
 from scinotation import Count
 
 
@@ -248,14 +248,28 @@ def parse_formula(formula: str):
     return FormulaRoot(formula, children)
 
 
+def _find_ion(symbol):
+    prefixes = ['di', 'tri', 'tetra', 'tetr', 'penta', 'pent', 'hexa', 'hex', 'hepta', 'hept', 'octa', 'oct']
+    ions = Ions()
+    periodic_table = PeriodicTable()
+    if symbol in ions:
+        return ions[symbol]
+    if symbol in periodic_table:
+        atom = periodic_table[symbol]
+        return Ion(atom.symbol, atom.name, 0)
+    for prefix in prefixes:
+        if symbol.startswith(prefix):
+            return(_find_ion(symbol[len(prefix):]))
+
+    raise FormulaParseError(f'unknown symbol: {symbol}')
+
 def parse_ion_equation(equation: str):
 
-    ions = Ions()
     parts = equation.split('->')
     if '+' in parts[0]:
-        reactants = [ions[reactant.strip()] for reactant in parts[0].split('+')]
+        reactants = [_find_ion(reactant.strip()) for reactant in parts[0].split('+')]
     else:
-        reactants = [ions[reactant.strip()] for reactant in parts[0].split()]
+        reactants = [_find_ion(reactant.strip()) for reactant in parts[0].split()]
     return reactants
 
 

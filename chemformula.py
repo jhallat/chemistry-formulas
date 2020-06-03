@@ -133,6 +133,32 @@ def _simplify(numbers: [Decimal]) -> Decimal:
 def is_polyatomic(ion: str):
     return len([char for char in ion if char.isupper()]) > 1
 
+def _binary_molecular_formula(products, ions):
+    prefixes = [('2','di'),
+                ('3','tri'),
+                ('4','tetra'),
+                ('4','tetr'),
+                ('5','penta'),
+                ('5','pent'),
+                ('6','hexa'),
+                ('6','hex'),
+                ('7','hepta'),
+                ('7','hept'),
+                ('8','octa'),
+                ('8','oct')]
+    subscript_one = ''
+    subscript_two = ''
+    _products = products.split()
+    for count, prefix in prefixes:
+        if _products[0].startswith(prefix):
+            subscript_one = count
+        if _products[1].startswith(prefix):
+            subscript_two = count
+        if len(subscript_one + subscript_two) == 2:
+            break
+    return ions[0].symbol + subscript_one + ions[1].symbol + subscript_two
+
+
 def predict_formula(products):
     """Predicts the formula of combining two ions.
 
@@ -156,8 +182,10 @@ def predict_formula(products):
         ions = parse_ion_equation(products)
     if len(ions) == 1:
         return ions[1].symbol
-    if (ions[0].charge * ions[1].charge) > 0:
+    if ions[0].charge > 0 and ions[1].charge > 0:
         return f'{ions[0].symbol} + {ions[1].symbol}'
+    if ions[0].charge < 0 and ions[1].charge < 0:
+        return _binary_molecular_formula(products, ions)
 
     positive, negative = (ions[0], ions[1]) if ions[0].charge > ions[1].charge else (ions[1], ions[0])
     product_charge = abs(positive.charge * negative.charge)
@@ -190,11 +218,27 @@ def compound_name(formula):
             total_charge = abs(int(components[1].count) * anion.charge)
             first += ('(' + ('I' * total_charge) + ')')
         second = anion.name
+        if '-' in first:
+            first = first.replace('-','')
         if '-' in second:
             second = second.split('-')[0] + 'ide'
+        #TODO there is probably a better way to do this
+        if anion.charge != -1 and cation.charge != 1:
+            first = prefix(components[0].count, cation.symbol[0]) + first
+            second = prefix(components[1].count, anion.symbol[0]) + second
         return  first + ' ' + second
     else:
         return 'unknown'
+
+def prefix(count, first_letter):
+    vowels = {'a', 'e', 'i', 'o', 'u'}
+    _count = int(count)
+    if _count < 2 or _count > 8:
+        return ''
+    prefix = ['di','tri','tetra','penta','hexa','hepta','octa'][_count - 2]
+    if first_letter.lower() in vowels and prefix[-1] == 'a':
+        prefix = prefix[:-1]
+    return prefix
 
 def _find_ion(component, ptable, ions):
     if component.type == FormulaNodeType.ATOM:

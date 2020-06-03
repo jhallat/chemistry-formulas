@@ -112,6 +112,11 @@ def test_predict_ammonium_phosphate():
     expected = '(NH4)3PO4'
     assert actual == expected
 
+def test_predict_dinitrogen_pentoxide():
+    actual = predict_formula('dinitrogen pentoxide')
+    expected = 'N2O5'
+    assert actual == expected
+
 def test_compound_name_NaCl():
     actual = compound_name('NaCl')
     expected = 'sodium chloride'
@@ -135,4 +140,14 @@ def test_compound_name_FeCl2():
 def test_compound_name_Al_NO3_3():
     actual = compound_name('Al(NO3)3')
     expected = 'aluminum nitrate'
+    assert actual == expected
+
+def test_compound_name_SO2():
+    actual = compound_name('SO2')
+    expected = 'sulfur dioxide'
+    assert actual == expected
+
+def test_compound_name_N2O5():
+    actual = compound_name('N2O5')
+    expected = 'dinitrogen pentoxide'
     assert actual == expected

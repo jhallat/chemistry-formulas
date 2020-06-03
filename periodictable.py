@@ -61,7 +61,14 @@ class Ions(object, metaclass=Singleton):
                     charge = [int(item) for item in data_line[2:]]
                 ions.append(Ion(data_line[0], data_line[1], charge))
             self._ions = {ion.symbol: ion for ion in ions}
-            self._names = {ion.name: ion for ion in ions}
+            self._names = {ion.name.replace('-',''): ion for ion in ions}
+            self._stems = {self._stem(ion.name): ion for ion in ions}
+
+    def _stem(self, name):
+        if '-' in name:
+            return name.split('-')[0]
+        else:
+            return name
 
     def __len__(self):
         return len(self._ions)
@@ -69,11 +76,16 @@ class Ions(object, metaclass=Singleton):
     def __getitem__(self, item):
         if item in self._ions:
             return self._ions[item]
-        else:
+        elif item in self._names:
             return self._names[item]
+        elif item.endswith('ide'):
+            return self._stems[item[0:-3]]
 
     def __contains__(self, item):
         if item in self._ions:
             return True
-        else:
-            return item in self._names
+        elif item in self._names:
+            return True
+        elif item.endswith('ide'):
+                return item[0:-3] in self._stems
+        return False

@@ -60,9 +60,10 @@ def test_parse_formula_K2SO4():
 
 def test_parse_equation_Li_and_O():
     actual = parse_ion_equation('Li + O')
-    expected = [Ion('Li','lithium', 1), Ion('O', 'oxy-gen', -2)]
+    expected = [Ion('Li','lithium', 1), Ion('O', 'ox-ygen', -2)]
     assert actual == expected
 
 def test_parse_equation_K_and_SO4():
     actual = parse_ion_equation('K + SO4')
-    expected = [Ion('K', 'pottsium', 1), Ion('SO4', 'sulfate', -2)]
+    expected = [Ion('K', 'potassium', 1), Ion('SO4', 'sulfate', -2)]
+    assert actual == expected

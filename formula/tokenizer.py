@@ -232,9 +232,18 @@ def tokenize(formula: str) -> [FormulaToken]:
     print(''.join(ion), end = ' - ')
     print(start_pos, end = ' = ')
     print(''.join(ion) in ions)
-    if (len(start_pos) == 3):
-        if ''.join(ion[1:]) in ions:
-            tokens.insert(start_pos[1], FormulaToken(FormulaTokenType.POLYATOMIC_START, '('))
+    if len(start_pos) == 3:
+        if ''.join(ion) in ions:
+            tokens.insert(start_pos[0], FormulaToken(FormulaTokenType.POLYATOMIC_START, '('))
+            tokens.append( FormulaToken(FormulaTokenType.POLYATOMIC_END, ')'))
+            ion.clear()
+            start_pos.clear()
+        else:
+            ion = ion[1:]
+            start_pos = start_pos[1:]
+    if len(start_pos) == 2:
+        if ''.join(ion) in ions:
+            tokens.insert(start_pos[0], FormulaToken(FormulaTokenType.POLYATOMIC_START, '('))
             tokens.append( FormulaToken(FormulaTokenType.POLYATOMIC_END, ')'))
     print(tokens)
     return tokens
