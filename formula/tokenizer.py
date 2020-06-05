@@ -14,6 +14,7 @@ class FormulaTokenType(Enum):
     COMBINDED_WITH = 4
     POLYATOMIC_START = 5
     POLYATOMIC_END = 6
+    STATE = 7
 
 class TokenState(Enum):
     START = 1
@@ -95,8 +96,11 @@ def state_symbol(pos, char, token, tokens, polyatomic, ion, start_pos):
         state = TokenState.START
     elif char == ')':
         if polyatomic:
-            tokens.append(FormulaToken(FormulaTokenType.SYMBOL, token))
-            tokens.append(FormulaToken(FormulaTokenType.POLYATOMIC_END, ')'))
+            if token in ['s','l','g','aq']:
+                tokens = tokens[:-1] + [FormulaToken(FormulaTokenType.STATE, token)]
+            else:
+                tokens.append(FormulaToken(FormulaTokenType.SYMBOL, token))
+                tokens.append(FormulaToken(FormulaTokenType.POLYATOMIC_END, ')'))
             token = ''
             polyatomic = False
             state = TokenState.POLYATOMIC_END
@@ -160,7 +164,7 @@ def state_polyatomic_end(pos, char, tokens):
     if char.isalpha():
         token = char
         state = TokenState.SYMBOL
-    if char.isdigit():
+    elif char.isdigit():
         token = char
         state = TokenState.SUBSCRIPT
     elif char == '*':
@@ -245,5 +249,6 @@ def tokenize(formula: str) -> [FormulaToken]:
         if ''.join(ion) in ions:
             tokens.insert(start_pos[0], FormulaToken(FormulaTokenType.POLYATOMIC_START, '('))
             tokens.append( FormulaToken(FormulaTokenType.POLYATOMIC_END, ')'))
+    print('tokens = ', end = ' ')
     print(tokens)
     return tokens

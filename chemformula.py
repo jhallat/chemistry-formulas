@@ -4,7 +4,7 @@ from decimal import Decimal
 from formula.parser import parse_formula, parse_ion_equation, FormulaNodeType
 from measurement import Measurement, grams, validate_measurement, GRAMS, MOLES
 from mole import molar_mass, moles_from_grams
-from periodictable import PeriodicTable, Ions, Ion
+from periodictable import PeriodicTable, Ions, Ion, CommonCompounds
 
 Component = namedtuple("Component", "count symbol mass mass_percent")
 
@@ -175,10 +175,22 @@ def predict_formula(products):
     >>> predict_formula(['Zn','Ag'])
     'Zn + Ag'
 
+    formulas can also be predicted based on the name of the
+    compound
+    >>> predict_formula('dinitrogen pentoxide')
+    'N2O5'
+
+    common names for some compounds may also be used
+    >>> predict_formula('water')
+    'H2O'
+
     """
+    common_compounds = CommonCompounds()
     if isinstance(products, list):
         ions = parse_ion_equation(' + '.join(products))
     else:
+        if products in common_compounds:
+            return common_compounds[products]
         ions = parse_ion_equation(products)
     if len(ions) == 1:
         return ions[1].symbol
@@ -208,6 +220,9 @@ def predict_formula(products):
 def compound_name(formula):
     periodic_table = PeriodicTable()
     ions = Ions()
+    common_compounds = CommonCompounds()
+    if formula in common_compounds:
+        return common_compounds[formula]
     root = parse_formula(formula)
     components = root[0].children
     if len(components) == 2:

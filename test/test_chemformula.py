@@ -117,6 +117,11 @@ def test_predict_dinitrogen_pentoxide():
     expected = 'N2O5'
     assert actual == expected
 
+def test_predict_H2O():
+    actual = predict_formula('water')
+    expected = 'H2O'
+    assert actual == expected
+
 def test_compound_name_NaCl():
     actual = compound_name('NaCl')
     expected = 'sodium chloride'
@@ -150,4 +155,19 @@ def test_compound_name_SO2():
 def test_compound_name_N2O5():
     actual = compound_name('N2O5')
     expected = 'dinitrogen pentoxide'
+    assert actual == expected
+
+def test_compound_name_H2O():
+    actual = compound_name('H2O')
+    expected = 'water'
+    assert actual == expected
+
+def test_compound_name_HCl_gas():
+    actual = compound_name('HCl(g)')
+    expected = "hydrogen chloride"
+    assert actual == expected
+
+def test_compound_name_HCl_aqueous():
+    actual = compound_name('HCl(aq)')
+    expected = "hydrochloric acid"
     assert actual == expected

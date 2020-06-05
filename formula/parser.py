@@ -22,6 +22,13 @@ class ParseState(Enum):
     SYMBOL = 3
     SUBSCRIPT = 4
 
+class CompoundState(Enum):
+    UNDEFINED = 0
+    GAS = 1
+    LIQUID = 2
+    SOLID = 3
+    AQUEOUS = 4
+
 class FormulaRoot:
 
     def __init__(self, symbol, children):
@@ -31,9 +38,11 @@ class FormulaRoot:
     def __eq__(self, other):
         if isinstance(other, FormulaRoot):
             return self.symbol == other.symbol and self.children == other.children
+        else:
+            return False
 
     def __repr__(self):
-        return f"formula_root(symbol='{self.symbol},children={self.children}'"
+        return f"root(symbol='{self.symbol},children={self.children}'"
 
     def __getitem__(self, item):
         return self.children[item]
@@ -62,9 +71,57 @@ class FormulaRoot:
         return atoms
 
 #TODO need to convert to a class and implement __eq__
-FormulaNode = namedtuple("formula_node", "count symbol type children")
+class FormulaNode:
 
+    def __init__(self, count, symbol, type, children,):
+        self.count = count
+        self.symbol = symbol
+        self.type = type
+        self.children = children
 
+    def __eq__(self, other):
+        if isinstance(other, FormulaNode):
+            return self.count == other.count \
+                   and self.symbol == other.symbol \
+                   and self.type == other.type \
+                   and self.children == other.children
+        else:
+            return False
+
+    def __repr__(self):
+        return f"node(count={self.count},symbol={self.symbol},type={self.type},children={self.children}"
+
+class CompoundNode(FormulaNode):
+
+    def __init__(self, count, symbol, children, state=CompoundState.UNDEFINED):
+        super().__init__(count, symbol, FormulaNodeType.COMPOUND, children)
+        self.state = state
+
+    def __eq__(self, other):
+        if isinstance(other, CompoundNode):
+            return super().__eq__(other) and self.state == other.state
+        if isinstance(other, FormulaNode):
+            return super().__eq__(other) and self.state == CompoundState.UNDEFINED
+        return False
+
+    def __repr__(self):
+        return f"compound(count={self.count},symbol={self.symbol},state={self.state},children={self.children})"
+
+class AtomNode(FormulaNode):
+
+    def __init__(self, count, symbol):
+        super().__init__(count, symbol, FormulaNodeType.ATOM, [])
+
+    def __repr__(self):
+        return f"atom(count={self.count},symbol={self.symbol})"
+
+class PolyatomicIonNode(FormulaNode):
+
+    def __init__(self, count, symbol, children):
+        super().__init__(count, symbol, FormulaNodeType.POLYATOMIC_ION, [])
+
+    def __repr__(self):
+        return f"polyatomic_ion(count={self.count},symbol={self.symbol},children={self.children})"
 
 def _reduce(elements: [(Decimal, str)]) -> [(Decimal, str)]:
     element_map = {}
@@ -80,7 +137,7 @@ def _reduce(elements: [(Decimal, str)]) -> [(Decimal, str)]:
 
     return reduced_elements
 
-def state_state(index, token, coefficient, symbol, polyatomic):
+def state_start(index, token, coefficient, symbol, polyatomic, compound_state):
     if token.type == FormulaTokenType.COEFFICIENT:
         coefficient = Decimal(token.value)
         state = ParseState.COEFFICIENT
@@ -90,9 +147,19 @@ def state_state(index, token, coefficient, symbol, polyatomic):
     elif token.type == FormulaTokenType.SUBSCRIPT and polyatomic:
         coefficient = Decimal(token.value)
         state = ParseState.COEFFICIENT
+    elif token.type == FormulaTokenType.STATE:
+        if token.value == 's':
+            compound_state = CompoundState.SOLID
+        if token.value == 'l':
+            compound_state = CompoundState.LIQUID
+        if token.value == 'g':
+            compound_state = CompoundState.GAS
+        if token.value == 'aq':
+            compound_state = CompoundState.AQUEOUS
+        state = ParseState.START
     else:
         raise FormulaParseError(f"unexpected token '{token.value}' at index {index}, expected coefficient or symbol")
-    return coefficient, symbol, state
+    return coefficient, symbol, state, compound_state
 
 def state_coefficient(index, token):
     if token.type == FormulaTokenType.SYMBOL:
@@ -132,13 +199,15 @@ def _parse_pass_two(tokens: [FormulaToken], polyatomic = False):
     coefficient = Decimal('1.000')
     symbol = ''
     compound = ''
+    compound_state = CompoundState.UNDEFINED
 
     for index, token in enumerate(tokens):
         if state == ParseState.START:
             if isinstance(token, list):
                 atoms.append(_parse_pass_two(token, True))
             else:
-                coefficient, symbol, state = state_state(index, token, coefficient, symbol, polyatomic)
+                coefficient, symbol, state, compound_state = \
+                    state_start(index, token, coefficient, symbol, polyatomic, compound_state)
 
         elif state == ParseState.COEFFICIENT:
             if isinstance(token, list):
@@ -181,7 +250,7 @@ def _parse_pass_two(tokens: [FormulaToken], polyatomic = False):
     if polyatomic:
         return FormulaNode(Count(coefficient), compound, FormulaNodeType.POLYATOMIC_ION, atoms)
     else:
-        return FormulaNode(Count(coefficient), compound, FormulaNodeType.COMPOUND, atoms)
+        return CompoundNode(Count(coefficient), compound, atoms, compound_state)
 
 def _parse_pass_one(tokens):
 
@@ -231,6 +300,9 @@ def _parse_pass_one(tokens):
                 polyatomic = []
                 compound.append(token)
                 state = COMPOUND
+        if token.type == FormulaTokenType.STATE:
+            if state == COMPOUND:
+                compound = [token] + compound
     if polyatomic:
         compound.append(polyatomic)
     root.append(compound)
@@ -241,9 +313,9 @@ def _parse_pass_one(tokens):
 def parse_formula(formula: str):
 
     tokens = tokenize(formula)
-    print(tokens)
+    print(f'tokens = {tokens}')
     root = _parse_pass_one(tokens)
-    print(root)
+    print(f'pass one = {root}')
     children = [_parse_pass_two(compound) for compound in root]
     return FormulaRoot(formula, children)
 

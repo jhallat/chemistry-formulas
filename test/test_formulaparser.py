@@ -1,7 +1,8 @@
 import unittest
 from decimal import Decimal
 
-from formula.parser import parse_formula, FormulaRoot, FormulaNode, FormulaNodeType, parse_ion_equation
+from formula.parser import parse_formula, FormulaRoot, FormulaNode, FormulaNodeType, parse_ion_equation, CompoundState, \
+    CompoundNode, AtomNode
 from periodictable import Ion
 from scinotation import Count
 
@@ -56,6 +57,15 @@ def test_parse_formula_K2SO4():
             FormulaNode(Count(4), 'O', FormulaNodeType.ATOM, [])
         ])
     ]))
+    assert actual == expected
+
+def test_parse_formula_N2H4_as_liquid():
+    actual = parse_formula('N2H4(l)')
+    expected = FormulaRoot('N2H4(l)', [])
+    expected.children.append(CompoundNode(Count(1), 'N2H4', [
+        AtomNode(Count(2), 'N'),
+        AtomNode(Count(4), 'H')
+    ], CompoundState.LIQUID))
     assert actual == expected
 
 def test_parse_equation_Li_and_O():

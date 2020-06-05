@@ -89,3 +89,22 @@ class Ions(object, metaclass=Singleton):
         elif item.endswith('ide'):
                 return item[0:-3] in self._stems
         return False
+
+class CommonCompounds(object, metaclass=Singleton):
+
+    def __init__(self):
+        path = os.path.join(os.path.dirname(__file__), "data/common_compounds.dat")
+        with open(path, "r") as data_file:
+            data = data_file.read()
+            compounds = [(item.split(',')[0], item.split(',')[1]) for item in data.split('\n')]
+            self._symbols = {symbol: name for symbol, name in compounds}
+            self._names = {name: symbol for symbol, name in compounds}
+
+    def __getitem__(self, item):
+        if item in self._symbols:
+            return self._symbols[item]
+        else:
+            return self._names[item]
+
+    def __contains__(self, item):
+        return item in self._symbols or item in self._names
