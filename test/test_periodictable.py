@@ -1,6 +1,6 @@
 import pytest
 
-from periodictable import PeriodicTable
+from src.chemistry.periodictable import PeriodicTable
 
 
 @pytest.fixture

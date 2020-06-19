@@ -1,10 +1,10 @@
 from collections import namedtuple
 from decimal import Decimal
 
-from formula.parser import parse_formula, parse_ion_equation, FormulaNodeType
-from measurement import Measurement, grams, validate_measurement, GRAMS, MOLES
-from mole import molar_mass, moles_from_grams
-from periodictable import PeriodicTable, Ions, Ion, CommonCompounds
+from chemistry.formula.parser import parse_formula, parse_ion_equation, FormulaNodeType
+from chemistry.measurement import Measurement, grams, validate_measurement, GRAMS, MOLES
+from chemistry.mole import molar_mass, moles_from_grams
+from chemistry.periodictable import PeriodicTable, Ions, Ion, CommonCompounds
 
 Component = namedtuple("Component", "count symbol mass mass_percent")
 

@@ -1,9 +1,7 @@
-from decimal import Decimal
-
-from formula.parser import parse_formula
-from measurement import Measurement, GRAMS, MOLES, validate_measurement, LITERS,ATOM
-from periodictable import PeriodicTable
-from scinotation import Scinot
+from chemistry.formula.parser import parse_formula
+from chemistry.measurement import Measurement, ATOM, MOLES, validate_measurement, GRAMS, LITERS
+from chemistry.periodictable import PeriodicTable
+from chemistry.scinotation import Scinot
 
 AVAGADROS_NUMBER = Scinot('6.022x10^23')
 

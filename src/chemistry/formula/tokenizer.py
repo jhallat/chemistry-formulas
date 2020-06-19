@@ -1,7 +1,7 @@
 from _decimal import Decimal
 from enum import Enum
 
-from periodictable import Ions
+from chemistry.periodictable import Ions
 
 
 class FormulaTokenizeError(Exception):

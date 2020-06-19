@@ -1,10 +1,7 @@
-import unittest
-from decimal import Decimal
-
-from formula.parser import parse_formula, FormulaRoot, FormulaNode, FormulaNodeType, parse_ion_equation, CompoundState, \
-    CompoundNode, AtomNode
-from periodictable import Ion
-from scinotation import Count
+from chemistry.formula.parser import parse_formula, FormulaRoot, FormulaNode, FormulaNodeType, CompoundNode, AtomNode, \
+    CompoundState, parse_ion_equation
+from chemistry.periodictable import Ion
+from chemistry.scinotation import Count
 
 
 def test_parse_formula_HCl():

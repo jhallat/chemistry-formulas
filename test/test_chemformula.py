@@ -1,9 +1,9 @@
 from decimal import Decimal
 
-from chemformula import composition, Component, formula_from_percent, formula_from_mass, \
+from src.chemistry.chemformula import composition, Component, formula_from_percent, formula_from_mass, \
     mol_formula_from_simple_formula, predict_formula, compound_name
-from measurement import grams
-from scinotation import Scinot
+from src.chemistry.measurement import grams
+from src.chemistry.scinotation import Scinot
 
 
 def test_composition_NaHCO3():

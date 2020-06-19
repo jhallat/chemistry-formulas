@@ -1,12 +1,11 @@
-import unittest
 from decimal import Decimal
 
 import pytest
 
-from measurement import Measurement, MOLES, LITERS, moles, liters, InvalidUnitError, GRAMS, milli, grams
-from mole import molar_mass, moles_from_grams, molarity, grams_in_solution, molarity_of_solution, moles_in_solution, \
+from src.chemistry.measurement import Measurement, MOLES, LITERS, moles, liters, InvalidUnitError, GRAMS, milli, grams
+from src.chemistry.mole import molar_mass, moles_from_grams, molarity, grams_in_solution, molarity_of_solution, moles_in_solution, \
     volume_from_solution, mass, molecules_in_mass
-from scinotation import Scinot
+from src.chemistry.scinotation import Scinot
 
 
 def test_molar_mass_K2CrO4():

@@ -1,10 +1,9 @@
-from collections import namedtuple
 from decimal import Decimal
 from enum import Enum
 
-from formula.tokenizer import FormulaToken, FormulaTokenType, tokenize
-from periodictable import Ions, PeriodicTable, Ion
-from scinotation import Count
+from chemistry.formula.tokenizer import FormulaTokenType, FormulaToken, tokenize
+from chemistry.periodictable import Ions, PeriodicTable, Ion
+from chemistry.scinotation import Count
 
 
 class FormulaParseError(Exception):

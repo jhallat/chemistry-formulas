@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from scinotation import Scinot
+from src.chemistry.scinotation import Scinot
 
 
 class InvalidUnitError(Exception):

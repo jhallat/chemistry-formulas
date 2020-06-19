@@ -1,5 +1,4 @@
-import unittest
-from scinotation import Scinot
+from src.chemistry.scinotation import Scinot
 
 
 def test_parse_full():
